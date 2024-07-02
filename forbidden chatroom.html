@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group Chat Room</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#particles-js {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  z-index: -1;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  z-index: 1;
+}
+
+.chat {
+  flex: 1;
+  overflow-y: scroll;
+  padding: 20px;
+}
+
+.message {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  animation: fadeInUp 0.5s ease both;
+  transition: background-color 0.3s;
+}
+
+.message:hover {
+  background-color: rgba(0, 191, 165, 0.1);
+}
+
+.user-message {
+  background-color: #dcf8c6;
+  align-self: flex-end;
+}
+
+.other-message {
+  background-color: #e2e2e2;
+  align-self: flex-start;
+}
+
+.input-area {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+}
+
+.input-area input[type="text"] {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  margin-right: 10px;
+  transition: box-shadow 0.3s;
+}
+
+.input-area input[type="text"]:focus {
+  box-shadow: 0 0 5px rgba(0, 191, 165, 0.5);
+}
+
+.input-area button {
+  padding: 10px 20px;
+  background-color: #00bfa5;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.input-area button:hover {
+  background-color: #009688;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"],
+.login-form button {
+  margin: 10px 0;
+  padding: 10px;
+  width: 200px;
+  border: none;
+  border-radius: 5px;
+}
+
+.login-form button {
+  background-color: #00bfa5;
+  color: #fff;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<div id="particles-js"></div>
+<div class="container" id="chat-container" style="display: none;">
+  <div class="chat" id="chat-output"></div>
+  <div class="input-area">
+    <input type="text" id="user-name" placeholder="Enter your name..." onblur="checkUserName()">
+    <input type="text" id="user-input" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+<div class="login-container" id="login-container">
+  <div class="login-form">
+    <input type="text" id="login-username" placeholder="Username">
+    <input type="password" id="login-password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="toggleSignup()">Sign Up</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+particlesJS('particles-js', {
+  "particles": {
+    "number": {
+      "value": 80,
+      "density": {
+        "enable": true,
+        "value_area": 800
+      }
+    },
+    "color": {
+      "value": "#ffffff"
+    },
+    "shape": {
+      "type": "circle",
+      "stroke": {
+        "width": 0,
+        "color": "#000000"
+      },
+      "polygon": {
+        "nb_sides": 5
+      },
+      "image": {
+        "src": "img/github.svg",
+        "width": 100,
+        "height": 100
+      }
+    },
+    "opacity": {
+      "value": 0.5,
+      "random": false,
+      "anim": {
+        "enable": false,
+        "speed": 1,
+        "opacity_min": 0.1,
+        "sync": false
+      }
+    },
+    "size": {
+      "value": 3,
+      "random": true,
+      "anim": {
+        "enable": false,
+        "speed": 40,
+        "size_min": 0.1,
+        "sync": false
+      }
+    },
+    "line_linked": {
+      "enable": true,
+      "distance": 150,
+      "color": "#ffffff",
+      "opacity": 0.4,
+      "width": 1
+    },
+    "move": {
+      "enable": true,
+      "speed": 6,
+      "direction": "none",
+      "random": false,
+      "straight": false,
+      "out_mode": "out",
+      "bounce": false,
+      "attract": {
+        "enable": false,
+        "rotateX": 600,
+        "rotateY": 1200
+      }
+    }
+  },
+  "interactivity": {
+    "detect_on": "canvas",
+    "events": {
+      "onhover": {
+        "enable": true,
+        "mode": "repulse"
+      },
+      "onclick": {
+        "enable": true,
+        "mode": "push"
+      },
+      "resize": true
+    },
+    "modes": {
+      "grab": {
+        "distance": 400,
+        "line_linked": {
+          "opacity": 1
+        }
+      },
+      "bubble": {
+        "distance": 400,
+        "size": 40,
+        "duration": 2,
+        "opacity": 8,
+        "speed": 3
+      },
+      "repulse": {
+        "distance": 200,
+        "duration": 0.4
+      },
+      "push": {
+        "particles_nb": 4
+      },
+      "remove": {
+        "particles_nb": 2
+      }
+    }
+  },
+  "retina_detect": true
+});
+
+var chatOutput = document.getElementById('chat-output');
+var chatContainer = document.getElementById('chat-container');
+var loginContainer = document.getElementById('login-container');
+
+var forbiddenWords = new Set([
+  "aad", "aand", "bahenchod", "behenchod", "bhenchod", "bhenchodd", "b.c.", "bc", "bakchod", "bakchodd",
+  "bakchodi", "bevda", "bewda", "bevdey", "bewday", "bevakoof", "bevkoof", "bevkuf", "bewakoof", "bewkoof",
+  "bewkuf", "bhadua", "bhaduaa", "bhadva", "bhadvaa", "bhadwa", "bhadwaa", "bhosada", "bhosda", "bhosdaa",
+  "bhosdike", "bhonsdike", "bsdk", "b.s.d.k", "bhosdiki", "bhosdiwala", "bhosdiwale", "bhosadchodal",
+  "bhosadchod", "bhosadchodal", "bhosadchod", "babbe", "babbey", "bube", "bubey", "bur", "burr", "buurr",
+  "buur", "charsi", "chooche", "choochi", "chuchi", "chhod", "chod", "chodd", "chudne", "chudney", "chudwa",
+  "chudwaa", "chudwane", "chudwaane", "choot", "chut", "chute", "chutia", "chutiya", "chutiye", "chuttad",
+  "chutad", "dalaal", "dalal", "dalle", "dalley", "fattu", "gadha", "gadhe", "gadhalund", "gaand", "gand",
+  "gandu", "gandfat", "gandfut", "gandiya", "gandiye", "goo", "gu", "gote", "gotey", "gotte", "hag", "haggu",
+  "hagne", "hagney", "harami", "haramjada", "haraamjaada", "haramzyada", "haraamzyaada", "haraamjaade",
+  "haraamzaade", "haraamkhor", "haramkhor", "jhat", "jhaat", "jhaatu", "jhatu", "kutta", "kutte", "kuttey",
+  "kutia", "kutiya", "kuttiya", "kutti", "landi", "landy", "laude", "laudey", "laura", "lora", "lauda",
+  "ling", "loda", "lode", "lund", "launda", "lounde", "laundey", "laundi", "loundi", "laundiya", "loundiya",
+  "lulli", "maar", "maro", "marunga", "madarchod", "madarchodd", "madarchood", "madarchoot", "madarchut",
+  "m.c.", "mc", "mamme", "mammey", "moot", "mut"
+]);
+
+function toggleSignup() {
+  var loginForm = document.querySelector('.login-form');
+  var signupButton = loginForm.querySelector('button:last-of-type');
+  if (signupButton.textContent === 'Sign Up') {
+    signupButton.textContent = 'Login';
+    signupButton.setAttribute('onclick', 'signup()');
+    document.getElementById('login-username').setAttribute('placeholder', 'New Username');
+    document.getElementById('login-password').setAttribute('placeholder', 'New Password');
+  } else {
+    signupButton.textContent = 'Sign Up';
+    signupButton.setAttribute('onclick', 'toggleSignup()');
+    document.getElementById('login-username').setAttribute('placeholder', 'Username');
+    document.getElementById('login-password').setAttribute('placeholder', 'Password');
+  }
+}
+
+function checkUserName() {
+  var userNameInput = document.getElementById('user-name');
+  var user = JSON.parse(localStorage.getItem('user'));
+  if (!user || userNameInput.value !== user.username) {
+    chatContainer.style.display = 'none';
+    loginContainer.style.display = 'flex';
+  }
+}
+
+function login() {
+  var username = document.getElementById('login-username').value.trim();
+  var password = document.getElementById('login-password').value.trim();
+  if (username === '' || password === '') {
+    alert('Please enter both username and password.');
+    return;
+  }
+  var users = JSON.parse(localStorage.getItem('users')) || [];
+  var user = users.find(u => u.username === username && u.password === password);
+  if (!user) {
+    alert('Invalid username or password.');
+    return;
+  }
+  localStorage.setItem('user', JSON.stringify(user));
+  showChat();
+}
+
+function signup() {
+  var username = document.getElementById('login-username').value.trim();
+  var password = document.getElementById('login-password').value.trim();
+  if (username === '' || password === '') {
+    alert('Please enter both username and password.');
+    return;
+  }
+  var users = JSON.parse(localStorage.getItem('users')) || [];
+  if (users.some(u => u.username === username)) {
+    alert('Username already exists. Please choose a different username.');
+    return;
+  }
+  var user = { username: username, password: password };
+  users.push(user);
+  localStorage.setItem('users', JSON.stringify(users));
+  localStorage.setItem('user', JSON.stringify(user));
+  showChat();
+}
+
+function showChat() {
+  var user = JSON.parse(localStorage.getItem('user'));
+  if (user) {
+    loginContainer.style.display = 'none';
+    chatContainer.style.display = 'flex';
+    document.getElementById('user-name').value = user.username;
+    document.getElementById('user-input').focus();
+  }
+}
+
+function sendMessage() {
+  var userNameInput = document.getElementById('user-name');
+  var userInput = document.getElementById('user-input');
+
+  if (userNameInput.value.trim() === '') {
+    alert('Please enter your name.');
+    return;
+  }
+
+  if (userInput.value.trim() !== '') {
+    var message = userInput.value.trim();
+
+    // Check if the message contains any forbidden words
+    if (containsForbiddenWord(message)) {
+      alert('Your message contains forbidden words. Please refrain from using offensive language.');
+      return;
+    }
+
+    var messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    if (chatOutput.children.length % 2 === 0) {
+      messageElement.classList.add('user-message');
+    } else {
+      messageElement.classList.add('other-message');
+    }
+    var timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    messageElement.innerHTML = '<strong>' + userNameInput.value.trim() + '</strong> (' + timestamp + '):<br>' + message;
+    chatOutput.appendChild(messageElement);
+    chatOutput.scrollTop = chatOutput.scrollHeight;
+
+    userInput.value = '';
+  } else {
+    alert('Please enter a message.');
+  }
+}
+
+function containsForbiddenWord(message) {
+  var words = message.toLowerCase().split(' ');
+  for (var word of words) {
+    if (forbiddenWords.has(word)) {
+      return true;
+    }
+  }
+  return false;
+}
+</script>
+</body>
+</html>
